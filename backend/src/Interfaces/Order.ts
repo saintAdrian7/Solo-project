@@ -1,7 +1,9 @@
+import { Product } from "./Product";
+
 export interface Order  {
     user: string
     products: {
-      product:string
+      product:Product
       quantity: number;
     }[];
     totalAmount: number;

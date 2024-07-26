@@ -8,6 +8,7 @@ const Product_1 = require("../Controller/Product");
 const router = express_1.default.Router();
 router.post('/', Product_1.PostProduct);
 router.get('/', Product_1.GetAllProducts);
+router.get('/recommendations/:userId', Product_1.GetUserReccomendations);
 router.get('/product/:id', Product_1.GetProduct);
 router.get('/category/:category', Product_1.GetProductsByCategory);
 router.get('/popular', Product_1.GetMostPopularProducts);

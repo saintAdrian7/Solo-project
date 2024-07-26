@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import userRoutes from './routes/userRoutes'
 import productRoutes from './routes/productRoutes';
 import orderRoutes from './routes/orderRoutes'
+import reviewRoutes from './routes/reviewRoutes'
 import multer from 'multer'
 import path from 'path';
 import cors from 'cors'
@@ -33,6 +34,7 @@ mongoose.connect(process.env.MONGO_URI!).then(() => console.log('MongoDB connect
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes)
+app.use('/api/reviews', reviewRoutes)
 
 app.post('/upload', upload.single('file'), (req, res) => {
   if (!req.file) {

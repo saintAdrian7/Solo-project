@@ -19,6 +19,7 @@ exports.getOneProduct = getOneProduct;
 exports.updateProduct = updateProduct;
 exports.deleteProduct = deleteProduct;
 const ProductModel_1 = __importDefault(require("../models/ProductModel"));
+const UserModel_1 = __importDefault(require("../models/UserModel"));
 const User_1 = require("../Utils/User");
 function createProduct(product) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -55,7 +56,14 @@ function getAllProducts() {
 function getOneProduct(id) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const product = yield ProductModel_1.default.findById(id).populate('reviews').populate('Seller');
+            const product = yield ProductModel_1.default.findById(id).populate('reviews').populate('Seller').populate({
+                path: 'reviews',
+                populate: {
+                    path: 'user',
+                    model: 'NovaMartUser',
+                    select: 'firstName lastName image'
+                }
+            });
             if (!product) {
                 throw new Error("Product with that id does not exist");
             }
@@ -124,7 +132,7 @@ const getMostPopularProducts = () => __awaiter(void 0, void 0, void 0, function*
 });
 exports.getMostPopularProducts = getMostPopularProducts;
 const handleSearchQuery = (params) => __awaiter(void 0, void 0, void 0, function* () {
-    const { query, category, minPrice, maxPrice, minRating, maxRating, sortBy = 'createdAt', sortOrder = 'desc', page = 1, limit = 10, } = params;
+    const { query, category, minPrice, maxPrice, minRating, maxRating, sortBy = 'createdAt', sortOrder = 'asc', page = 1, limit = 10, } = params;
     try {
         const searchConditions = {};
         if (query) {
@@ -169,3 +177,44 @@ const handleSearchQuery = (params) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.handleSearchQuery = handleSearchQuery;
+const recommendProducts = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const user = yield UserModel_1.default.findById(userId)
+            .populate({
+            path: 'orders',
+            populate: {
+                path: 'products.product',
+                model: 'Product',
+            }
+        })
+            .populate('cart')
+            .exec();
+        if (!user) {
+            throw new Error('User not found');
+        }
+        const userOrders = user.orders || [];
+        const userCart = user.cart || [];
+        const productCategories = new Set();
+        userOrders.forEach(order => {
+            order.products.forEach(({ product }) => {
+                if (product && product.Category) {
+                    productCategories.add(product.Category);
+                }
+            });
+        });
+        userCart.forEach(product => {
+            if (product && product.Category) {
+                productCategories.add(product.Category);
+            }
+        });
+        const recommendedProducts = yield ProductModel_1.default.find({
+            Category: { $in: Array.from(productCategories) }
+        }).limit(10);
+        return recommendedProducts;
+    }
+    catch (error) {
+        console.error('Error fetching recommended products:', error);
+        throw error;
+    }
+});
+exports.default = recommendProducts;

@@ -45,7 +45,7 @@ function getUser(id) {
                 populate: {
                     path: 'products.product',
                     model: 'Product',
-                    select: 'Name Description DiscountedPrice Image'
+                    select: 'Name Description DiscountedPrice Image Category'
                 }
             });
             if (!user) {

@@ -39,7 +39,7 @@ const ProductSchema = new Schema(
         },
         reviews: {
             type: [Schema.Types.ObjectId],
-            ref: 'NovaMartUser'
+            ref: 'Review'
         },
     },
     {

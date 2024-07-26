@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Container, Typography, Box, MenuItem, Select, Divider, Alert, Grid, Button } from '@mui/material';
 import { styled } from '@mui/system';
 import ProductCard from './ProductCard'; 
-import { FetchAllProducts, FetchMostPopularProducts, FetchProductsByCategory, FetchRecentlyAddedProducts } from '../../context/ProductContext/ProductContextActions';
+import { FetchAllProducts, FetchMostPopularProducts, FetchProductsByCategory} from '../../context/ProductContext/ProductContextActions';
 import { useProduct } from '../../context/ProductContext/ProductContextConsts';
 import { Product } from '../../Models/Models';
 import SearchComponent from './Search';
+import axios from 'axios';
+import { useAuth } from '../../context/AuthContext/AuthContextConsts';
 
 const StyledContainer = styled(Container)({
   padding: '2rem',
@@ -22,17 +24,16 @@ const ProductCategory: React.FC = () => {
   const [category, setCategory] = useState<string>('All');
   const [showSearch, setShowSearch] = useState<boolean>(false);
   const { productState, dispatch } = useProduct();
-  const [recentProducts, setRecentProducts] = useState<Product[]>([]);
+  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
   const [popularProducts, setPopularProducts] = useState<Product[]>([]);
+  const {state} = useAuth()
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         if (category === 'All') {
           await FetchAllProducts(dispatch);
-          const recentProductsData = await FetchRecentlyAddedProducts(dispatch);
           const popularProductsData = await FetchMostPopularProducts(dispatch);
-          setRecentProducts(recentProductsData);
           setPopularProducts(popularProductsData);
         } else {
           await FetchProductsByCategory(dispatch, category);
@@ -42,8 +43,23 @@ const ProductCategory: React.FC = () => {
       }
     };
 
+    const fetchRecommendedProducts = async () => {
+      try{
+        const response = await axios.get(`http://localhost:5000/api/products/recommendations/${state.loggedInUser?._id}`)
+        setRecommendedProducts(response.data.products)
+      }catch(error){
+        console.log(error);
+        
+
+      }
+    }
+
     fetchProducts();
-  }, [category, dispatch]);
+    if(state.loggedInUser){
+      fetchRecommendedProducts()
+    }
+  
+  }, [category, state.loggedInUser, dispatch]);
 
   if (productState.loading) return  (
    <Box  sx={{ position: 'absolute', left: '25%', top: '40%' }}>
@@ -119,16 +135,21 @@ const ProductCategory: React.FC = () => {
           </Grid>
 
           <Divider sx={{ my: 4 }} />
-          <Typography variant="h5" gutterBottom>
-            Recently Added
-          </Typography>
-          <Grid container spacing={2}>
-            {recentProducts.map((product) => (
-              <Grid item key={product._id} xs={12} sm={6} md={4} lg={3}>
-                <ProductCard product={product} />
-              </Grid>
-            ))}
-          </Grid>
+          {state.loggedInUser && (
+  <>
+    <Typography sx={{ fontFamily: 'Inder' }} variant="h5" gutterBottom>
+      Recommended Products
+    </Typography>
+    <Grid container spacing={2}>
+      {recommendedProducts.map((product) => (
+        <Grid item key={product._id} xs={12} sm={6} md={4} lg={3}>
+          <ProductCard product={product} />
+        </Grid>
+      ))}
+    </Grid>
+  </>
+)}
+
         </>
       )}
 

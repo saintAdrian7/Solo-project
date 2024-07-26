@@ -33,6 +33,7 @@ export const FetchProductsByCategory = async (dispatch: React.Dispatch<Action>, 
     try {
         const response = await axios.get(`http://localhost:5000/api/products/category/${category}`);
         dispatch({ type: "FETCH_BY_CATEGORY SUCCESS", payload: response.data.products });
+        return response.data.products
     } catch (error) {
         dispatch({ type: "FETCH_BY_CATEGORY FAILURE" });
         console.log(error);

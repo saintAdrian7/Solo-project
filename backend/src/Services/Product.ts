@@ -1,5 +1,7 @@
 import { Product, searchParams } from "../Interfaces/Product";
+import Order from "../models/OrderModel";
 import ProductModel, { IProduct } from "../models/ProductModel";
+import UserModel from "../models/UserModel";
 import { UnableToSaveUserError } from "../Utils/User";
 
 
@@ -38,7 +40,14 @@ export async function getAllProducts ():Promise <IProduct[]>{
 
 export async function getOneProduct (id:string):Promise <IProduct>{
     try{
-        const product = await ProductModel.findById(id).populate('reviews').populate('Seller')
+        const product = await ProductModel.findById(id).populate('reviews').populate('Seller').populate({
+            path: 'reviews',
+            populate: {
+              path: 'user',
+              model: 'NovaMartUser',
+              select:'firstName lastName image'
+            }
+          })
        if(!product){
         throw new Error("Product with that id does not exist")
        }else{
@@ -112,7 +121,7 @@ export const handleSearchQuery = async (params:searchParams): Promise<Product[] 
         minRating,
         maxRating,
         sortBy = 'createdAt',
-        sortOrder = 'desc',
+        sortOrder = 'asc',
         page=1,
         limit=10,   
     } = params
@@ -161,3 +170,58 @@ export const handleSearchQuery = async (params:searchParams): Promise<Product[] 
 
 
 }
+
+
+const recommendProducts = async (userId: string) => {
+  try {
+    const user = await UserModel.findById(userId)
+    .populate({
+        path: 'orders', 
+        populate: {
+          path: 'products.product', 
+          model: 'Product', 
+          
+        }
+      })
+      .populate('cart')
+      .exec();
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    
+    const userOrders = user.orders || [];
+    const userCart = user.cart || [];
+
+
+    const productCategories = new Set<string>();
+
+    userOrders.forEach(order => {
+      order.products.forEach(({ product }) => {
+        if (product && product.Category) {
+          productCategories.add(product.Category);
+        }
+      });
+    });
+
+    userCart.forEach(product => {
+      if (product && product.Category) {
+        productCategories.add(product.Category);
+      }
+    });
+
+ 
+  
+    const recommendedProducts = await ProductModel.find({
+      Category: { $in: Array.from(productCategories) }
+    }).limit(10);
+
+    return recommendedProducts;
+  } catch (error) {
+    console.error('Error fetching recommended products:', error);
+    throw error;
+  }
+};
+
+export default recommendProducts;

@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { createProduct, deleteProduct, getAllProducts, getMostPopularProducts, getOneProduct, getProductsByCategory, getRecentlyAddedProducts, handleSearchQuery, updateProduct } from "../Services/Product";
+import recommendProducts, { createProduct, deleteProduct, getAllProducts, getMostPopularProducts, getOneProduct, getProductsByCategory, getRecentlyAddedProducts, handleSearchQuery, updateProduct } from "../Services/Product";
 import { IProduct } from "../models/ProductModel";
 import { searchParams } from "../Interfaces/Product";
-import { log } from "console";
+
 
 export async function PostProduct (req:Request, res:Response){
     const product = req.body
@@ -153,5 +153,16 @@ export async function HandleSearchProducts(req:Request, res:Response) {
 
   }catch(error:any){
     res.status(500).json({message:"Unable to search products at this time", error:error.messsage})
+  }
+}
+
+export async function GetUserReccomendations(req:Request, res:Response) {
+  const userId = req.params.userId
+  try{
+    const products = await recommendProducts(userId)
+    res.status(200).json({message:"Retrieved user recomendations successfully", products})
+
+  }catch(error:any){
+    res.status(500).json({message:"Unable to get user recomendations at this time",})
   }
 }

@@ -9,6 +9,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
 const productRoutes_1 = __importDefault(require("./routes/productRoutes"));
 const orderRoutes_1 = __importDefault(require("./routes/orderRoutes"));
+const reviewRoutes_1 = __importDefault(require("./routes/reviewRoutes"));
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const cors_1 = __importDefault(require("cors"));
@@ -32,6 +33,7 @@ mongoose_1.default.connect(process.env.MONGO_URI).then(() => console.log('MongoD
 app.use('/api/users', userRoutes_1.default);
 app.use('/api/products', productRoutes_1.default);
 app.use('/api/orders', orderRoutes_1.default);
+app.use('/api/reviews', reviewRoutes_1.default);
 app.post('/upload', upload.single('file'), (req, res) => {
     if (!req.file) {
         return res.status(400).send('No file uploaded.');

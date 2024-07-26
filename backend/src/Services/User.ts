@@ -24,7 +24,7 @@ export async function getUser(id:string):Promise <IUser | void>{
             populate: {
               path: 'products.product', 
               model: 'Product', 
-              select: 'Name Description DiscountedPrice Image' 
+              select: 'Name Description DiscountedPrice Image Category' 
             }
           });
         if(!user){

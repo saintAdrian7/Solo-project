@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import { Product } from "./Product";
+import { Order } from "./Order";
 export interface User {
     role:"ADMIN" | "USER",
     firstName:string,
@@ -6,9 +8,9 @@ export interface User {
     email:string,
     password:string,
     image:string,
-    products: mongoose.Types.ObjectId[];
-    orders: mongoose.Types.ObjectId[];
-    cart: mongoose.Types.ObjectId[];
+    products: Product[];
+    orders: Order[];
+    cart: Product[];
 }
 
 export interface JwtPayload {

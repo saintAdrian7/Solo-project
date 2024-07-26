@@ -50,8 +50,8 @@ export interface Order  {
     Category: 'Electronics'|'Fashion'|'Home'|'Books'|'Sports'|'Beauty'|'Toys'|'Groceries'|'Automotive'|'Health',
     Seller:string,
     Image:string[],
-    Rating?:number,
-    Reviews?:string
+    Rating:number,
+    reviews:ReviewData[]
 
 }
 
@@ -66,3 +66,12 @@ export interface ProductPayload {
     Rating?:number,
     Reviews?:string
 }
+
+export interface ReviewData {
+    _id:string
+    user: User;
+    product: string;
+    rating: number;
+    comment: string;
+    createdAt:Date;
+  }
